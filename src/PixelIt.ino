@@ -65,7 +65,7 @@
 #define UPDATE_BATTERY_LEVEL_INTERVAL 1000 * 30     // 30 Seconds
 
 // Version config - will be replaced by build piple with Git-Tag!
-#define VERSION "0.0.0-beta" // will be replaced by build piple with Git-Tag!
+#define VERSION "2.5.0" // will be replaced by build piple with Git-Tag!
 
 // Workaround for String in defines
 #define XSTR(x) #x
@@ -2490,7 +2490,7 @@ void DrawClock(bool fromJSON)
 
     if (clockDateDayMonth)
     {
-        sprintf_P(date, PSTR("%02d.%02d."), day(), month());
+        sprintf_P(date, PSTR("%02d.%02d"), day(), month());
     }
     else
     {
