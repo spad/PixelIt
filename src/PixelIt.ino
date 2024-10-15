@@ -64,7 +64,7 @@
 #define UPDATE_BATTERY_LEVEL_INTERVAL 1000 * 30     // 30 Seconds
 
 // Version config - will be replaced by build piple with Git-Tag!
-#define VERSION "0.0.0-beta" // will be replaced by build piple with Git-Tag!
+#define VERSION "2.5.3" // will be replaced by build piple with Git-Tag!
 
 // Workaround for String in defines
 #define XSTR(x) #x
