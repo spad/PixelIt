@@ -38,7 +38,6 @@
 #include <DHTesp.h>
 #include <DFPlayerMini_Fast.h>
 #include <SoftwareSerial.h>
-#include "ColorConverterLib.h"
 #include <TimeLib.h>
 #include <ArduinoJson.h>
 #include <ArduinoHttpClient.h>
@@ -506,11 +505,7 @@ void SaveConfig()
     json["matrixTempCorrection"] = matrixTempCorrection;
     json["ntpServer"] = ntpServer;
     json["clockTimeZone"] = clockTimeZone;
-
-    String clockColorHex;
-    ColorConverter::RgbToHex(clockColorR, clockColorG, clockColorB, clockColorHex);
-    json["clockColor"] = "#" + clockColorHex;
-
+    json["clockColor"] = "#" + RGBtoHEX(clockColorR, clockColorG, clockColorB);
     json["clockSwitchAktiv"] = clockSwitchAktiv;
     json["clockSwitchSec"] = clockSwitchSec;
     json["clock24Hours"] = clock24Hours;
@@ -692,7 +687,7 @@ void SetConfigVariables(JsonObject &json)
 
     if (json.containsKey("clockColor"))
     {
-        ColorConverter::HexToRgb(json["clockColor"].as<String>(), clockColorR, clockColorG, clockColorB);
+        HEXtoRGB(json["clockColor"].as<String>(), clockColorR, clockColorG, clockColorB);
     }
 
     if (json.containsKey("clockSwitchAktiv"))
@@ -1545,7 +1540,7 @@ void CreateFrames(JsonObject &json, int forceDuration)
             uint8_t b = 255;
             if (json["switchAnimation"]["hexColor"].as<char *>() != NULL)
             {
-                ColorConverter::HexToRgb(json["switchAnimation"]["hexColor"].as<char *>(), r, g, b);
+                HEXtoRGB(json["switchAnimation"]["hexColor"].as<char *>(), r, g, b);
             }
             else if (json["switchAnimation"]["color"]["r"].as<char *>() != NULL)
             {
@@ -1628,7 +1623,7 @@ void CreateFrames(JsonObject &json, int forceDuration)
             else if (json["clock"]["hexColor"].as<char *>() != NULL)
             {
                 logMessage += F("hexColor, ");
-                ColorConverter::HexToRgb(json["clock"]["hexColor"].as<char *>(), clockColorR, clockColorG, clockColorB);
+                HEXtoRGB(json["clock"]["hexColor"].as<char *>(), clockColorR, clockColorG, clockColorB);
             }
             if (logMessage.endsWith(", "))
             {
@@ -1651,7 +1646,7 @@ void CreateFrames(JsonObject &json, int forceDuration)
             uint8_t r, g, b;
             if (json["bar"]["hexColor"].as<char *>() != NULL)
             {
-                ColorConverter::HexToRgb(json["bar"]["hexColor"].as<char *>(), r, g, b);
+                HEXtoRGB(json["bar"]["hexColor"].as<char *>(), r, g, b);
             }
             else
             {
@@ -1671,7 +1666,7 @@ void CreateFrames(JsonObject &json, int forceDuration)
                 uint8_t r, g, b;
                 if (x["hexColor"].as<char *>() != NULL)
                 {
-                    ColorConverter::HexToRgb(x["hexColor"].as<char *>(), r, g, b);
+                    HEXtoRGB(x["hexColor"].as<char *>(), r, g, b);
                 }
                 else
                 {
@@ -1719,7 +1714,7 @@ void CreateFrames(JsonObject &json, int forceDuration)
             for (JsonVariant singleBitmap : json["bitmaps"].as<JsonArray>())
             {
                 DrawSingleBitmap(singleBitmap);
-                        }
+            }
             logMessage += json["bitmaps"].as<JsonArray>().size();
             logMessage += F("), ");
         }
@@ -1797,7 +1792,7 @@ void CreateFrames(JsonObject &json, int forceDuration)
             uint8_t r, g, b;
             if (json["text"]["hexColor"].as<char *>() != NULL)
             {
-                ColorConverter::HexToRgb(json["text"]["hexColor"].as<char *>(), r, g, b);
+                HEXtoRGB(json["text"]["hexColor"].as<char *>(), r, g, b);
             }
             else
             {
@@ -2490,7 +2485,7 @@ void DrawClock(bool fromJSON)
 
     if (clockDateDayMonth)
     {
-        sprintf_P(date, PSTR("%02d.%02d."), day(), month());
+        sprintf_P(date, PSTR("%02d.%02d"), day(), month());
     }
     else
     {
@@ -3497,36 +3492,36 @@ uint8_t TranslatePin(String pin)
 #elif defined(ESP32)
 
     if (pin == "GPIO_NUM_14")
-        return GPIO_NUM_14;
+        return (int)GPIO_NUM_14;
     if (pin == "GPIO_NUM_15")
-        return GPIO_NUM_15;
+        return (int)GPIO_NUM_15;
     if (pin == "GPIO_NUM_16")
-        return GPIO_NUM_16;
+        return (int)GPIO_NUM_16;
     if (pin == "GPIO_NUM_17")
-        return GPIO_NUM_17;
+        return (int)GPIO_NUM_17;
     if (pin == "GPIO_NUM_18")
-        return GPIO_NUM_18;
+        return (int)GPIO_NUM_18;
     if (pin == "GPIO_NUM_19")
-        return GPIO_NUM_19;
+        return (int)GPIO_NUM_19;
     if (pin == "GPIO_NUM_21")
-        return GPIO_NUM_21;
+        return (int)GPIO_NUM_21;
     if (pin == "GPIO_NUM_22")
-        return GPIO_NUM_22;
+        return (int)GPIO_NUM_22;
     if (pin == "GPIO_NUM_23")
-        return GPIO_NUM_23;
+        return (int)GPIO_NUM_23;
     if (pin == "GPIO_NUM_25")
-        return GPIO_NUM_25;
+        return (int)GPIO_NUM_25;
     if (pin == "GPIO_NUM_26")
-        return GPIO_NUM_26;
+        return (int)GPIO_NUM_26;
     if (pin == "GPIO_NUM_27")
-        return GPIO_NUM_27;
+        return (int)GPIO_NUM_27;
     if (pin == "SPI_CLK_GPIO_NUM")
-        return SPI_CLK_GPIO_NUM;
+        return (int)SPI_CLK_GPIO_NUM;
     if (pin == "SPI_CS0_GPIO_NUM")
-        return SPI_CS0_GPIO_NUM;
+        return (int)SPI_CS0_GPIO_NUM;
 
     Log(F("Pin assignment - unknown pin"), pin);
-    return GPIO_NUM_32; // IDK
+    return (int)GPIO_NUM_32; // IDK
 #endif
 }
 
@@ -3643,8 +3638,7 @@ void setup()
     else
     {
         delete bh1750;
-        max44009 = new Max44009(Max44009::Boolean::False);
-        max44009->configure(MAX44009_DEFAULT_ADDRESS, &twowire, Max44009::Boolean::False);
+        max44009 = new Max44009(MAX44009_DEFAULT_ADDRESS, &twowire);
         if (max44009->isConnected())
         {
             Log(F("Setup"), F("Max44009/GY-049 started"));
